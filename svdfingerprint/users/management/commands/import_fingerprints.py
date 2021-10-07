@@ -19,7 +19,8 @@ class Command(BaseCommand):
         for subfolder in list_subfolders:
             dirname = os.path.basename(subfolder)
             if Command.check_user(dirname):
-                user = Users.objects.create(name=dirname)
+                user = Users()
+                user.name = dirname
 
                 onlyfiles = [f for f in os.listdir(subfolder) if os.path.isfile(os.path.join(subfolder, f))]
                 images = []
@@ -29,18 +30,20 @@ class Command(BaseCommand):
                         images.append(img_as_int(io.imread(subfolder + '\\' +image, True)))
                 
                 for i in range(len(images)):
+                    fgp = images[i].flatten().tolist()
                     if i == 0:
-                        user.figerprint1 = images[i].flatten()
+                        user.figerprint1 = fgp
                     elif i == 1:
-                        user.figerprint2 = images[i].flatten()
+                        user.figerprint2 = fgp
                     elif i == 2:
-                        user.figerprint3 = images[i].flatten()
+                        user.figerprint3 = fgp
                     elif i == 3:
-                        user.figerprint4 = images[i].flatten()
+                        user.figerprint4 = fgp
                     elif i == 4:
-                        user.figerprint5 = images[i].flatten()
+                        user.figerprint5 = fgp
                 
                 user.save()
+               
 
     @staticmethod
     def check_user(name):
