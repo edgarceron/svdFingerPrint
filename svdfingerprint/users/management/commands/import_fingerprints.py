@@ -3,9 +3,9 @@ from PIL.Image import Image
 from django.core.management.base import BaseCommand
 from matplotlib import pyplot as plt
 from numpy.lib.type_check import imag
-from skimage import io, color
-from skimage.util import img_as_int
+from skimage import io
 from users.models import Users
+from users import utils
 
 class Command(BaseCommand):
     help = 'Carga los usuarios desde la ruta especificada, cada subcarpeta dentro de la ruta sera un usuario'
@@ -21,13 +21,12 @@ class Command(BaseCommand):
             if Command.check_user(dirname):
                 user = Users()
                 user.name = dirname
-
                 onlyfiles = [f for f in os.listdir(subfolder) if os.path.isfile(os.path.join(subfolder, f))]
                 images = []
                 for image in onlyfiles:
-                    filename, file_extension = os.path.splitext(image)
-                    if file_extension == '.jpg':
-                        images.append(img_as_int(io.imread(subfolder + '\\' +image, True)))
+                    result = utils.getArrayImage(subfolder, image)
+                    if result is not None: 
+                        images.append(result)
                 
                 for i in range(len(images)):
                     fgp = images[i].flatten().tolist()
@@ -43,8 +42,7 @@ class Command(BaseCommand):
                         user.figerprint5 = fgp
                 
                 user.save()
-               
-
+    
     @staticmethod
     def check_user(name):
         try:

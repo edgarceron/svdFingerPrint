@@ -1,4 +1,3 @@
-import time
 import numpy as np
 from users.models import Users
 
@@ -34,16 +33,7 @@ def calcSvd(fingerprints_matrix, avgFingerprint):
     return U, S, VT
 
 def getSvd():
-    start = time.time()
     fingerprints_matrix = getAllFingerPrints()
     avgFingerprint = getAvgFingerPrint(fingerprints_matrix)
     U, S, VT = calcSvd(fingerprints_matrix, avgFingerprint)
-    end = time.time()
-    print(end - start)
-    print(len(U))
-
-def detect(fingerprints_matrix):
-    for i in fingerprints_matrix:
-        if not(type(i) == np.ndarray):
-            print(type(i))
-            break
+    return U, S, VT
