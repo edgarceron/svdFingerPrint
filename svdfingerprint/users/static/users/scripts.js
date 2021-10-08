@@ -9,22 +9,22 @@ $(document).ready(function () {
             if($.inArray(ext, ['jpg']) == -1) {
                 alert('invalid extension!');
             }
-            fd.append('file', files[0]);
-            $.ajax({
-                url: 'upload/',
-                type: 'post',
-                data: fd,
-                contentType: false,
-                processData: false,
-                success: function (response) {
-                    if (response != 0) {
-                        $("#img").attr("src", response);
-                        $(".preview img").show(); // Display image element
-                    } else {
-                        alert('file not uploaded');
-                    }
-                },
-            });
+            else{
+                fd.append('file', files[0]);
+                $.ajax({
+                    url: 'upload/',
+                    type: 'post',
+                    dataType: 'json',
+                    data: fd,
+                    contentType: false,
+                    processData: false,
+                    success: function (response) {
+                        if (response != 0) {
+                            $("#imageCanvas").attr("src", "/media/" + response["route"]);
+                        }
+                    },
+                });
+            }
         } else {
             alert("Please select a file.");
         }

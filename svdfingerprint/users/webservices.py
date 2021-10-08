@@ -11,4 +11,9 @@ class ImageViewSet(ListAPIView):
     def post(self, request, *args, **kwargs):
         file = request.data['file']
         image = UploadImage.objects.create(image=file)
-        return HttpResponse(json.dumps({'message': "Uploaded"}), status=200)
+
+        return HttpResponse(
+            json.dumps({
+                'message': "Uploaded", 
+                "route": str(image.image)
+            }), status=200)

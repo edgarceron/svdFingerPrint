@@ -13,7 +13,7 @@
 
 </head>
 
-<body cz-shortcut-listen="true">
+<body>
 
     <div class="col-lg-8 mx-auto p-3 py-md-5">
         <header class="d-flex align-items-center pb-3 mb-5 border-bottom">
@@ -22,20 +22,25 @@
             </a>
         </header>
 
-        <main>
-            <div class="col-3">
-                <div class="row">
-                    <label for="formFileLg" class="form-label">Seleccione la huella a Verificar</label>
-                    <input class="form-control form-control-md" id="formFile" type="file" accept="image/jpg">
-                </div>
-                <div class="row">
-                    <button type="button" class="btn btn-primary" id="uploadButton">Primary</button>
-                </div>
-            </div>
-            <div class="col-3">
 
+            <div class="container">            
+                <div class="row">
+                    <div class="col-md-3">
+                        <label for="formFileLg" class="form-label">Seleccione la huella a Verificar</label>
+                        <input class="form-control form-control-md" id="formFile" type="file" accept="image/jpg">
+                    </div>
+                    <div class="col-md-3">
+                        <img id="imageCanvas">
+                    </div>
+                </div>
+                <br>
+                <div class="row">
+                    <div class="col-md-3">
+                        <button type="button" class="btn btn-primary" id="uploadButton">Subir</button>
+                    </div>
+                </div>
             </div>
-        </main>
+
         <footer class="pt-5 my-5 text-muted border-top">
             Universidad del Valle · © 2021
         </footer>

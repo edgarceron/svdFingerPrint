@@ -1,9 +1,6 @@
-import os, numpy as np
-from PIL.Image import Image
+import os
 from django.core.management.base import BaseCommand
-from matplotlib import pyplot as plt
 from numpy.lib.type_check import imag
-from skimage import io
 from users.models import Users
 from users import utils
 
