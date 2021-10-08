@@ -1,9 +1,5 @@
-from _typeshed import NoneType
 from typing import Union
 import numpy as np
-from users.svd import getAllFingerPrints, getAvgFingerPrint, calcSvd
-
-IMAGE_SHAPE = (200, 200)
 
 class Areas:
     def __init__(self, target, areas):
@@ -11,19 +7,10 @@ class Areas:
         self.target = target
         self.areas = areas
 
-def reshape(fingerprint1d):
-    return fingerprint1d.reshape(IMAGE_SHAPE) 
-
-def compare(fingerprintA, fingerPrintB, PCAModes: list):
+def compare(U, fingerprintA, fingerprintB, PCAModes):
     PCAmodes = PCAModes
-    fingerprints_matrix = getAllFingerPrints()
-    avgFingerprint = getAvgFingerPrint(fingerprints_matrix)
-    U, S, VT = calcSvd(fingerprints_matrix, avgFingerprint)
-    fingerprintA = fingerprintA - np.tile(avgFingerprint,(fingerprintA.shape[1],1)).T
-    fingerPrintB = fingerPrintB - np.tile(avgFingerprint,(fingerPrintB.shape[1],1)).T
-
     PCACoordsA = U[:, PCAmodes - np.ones_like(PCAmodes)].T @ fingerprintA
-    PCACoordsB = U[:, PCAmodes - np.ones_like(PCAmodes)].T @ fingerPrintB
+    PCACoordsB = U[:, PCAmodes - np.ones_like(PCAmodes)].T @ fingerprintB
 
     similarity = calculate_similarity(PCACoordsA, PCACoordsB)
     return similarity
@@ -36,13 +23,16 @@ def calculate_similarity(PCACoordsA, PCACoordsB):
     result_b = Areas('B', areas)
     init_partition(pair_coords_a, result_a)
     init_partition(pair_coords_b, result_b)
-
-    similar = len(pair_coords_a)
+    similar = 0
+    area = 0
     for i in result_a.groups.keys():
-        if i in result_b.groups:
-            similar -= result_a.groups[i] - result_b.groups[i]
-
-    return similar/len(pair_coords_a) * 100
+        if result_a.groups[i] > 0:
+            area += result_a.groups[i]
+            if result_b.groups[i] > result_a.groups[i]:
+                similar += result_a.groups[i]
+            else:
+                similar += result_b.groups[i]
+    return similar/area * 100
 
 
 def create_pair_list(coords):
@@ -62,30 +52,37 @@ def second_axis_partition(pointX: tuple, coords: list, result: Areas):
         if i[0] == pointX:
             partition(coords, i[1], 1, pointX, result)
 
-def partition(coords: list, pivots: list(tuple), axis: int, pointX: Union[NoneType, tuple], result: Areas):
+def partition(coords: list, pivots: list, axis: int, pointX: Union[object, tuple], result: Areas):
+    if len(coords) == 0:
+        if axis == 1:
+            for pointY in pivots:
+                result.groups[formatTuple(pointX) + "," + formatTuple(pointY)] = 0
     if len(pivots) == 1:
         if axis == 0:
             second_axis_partition(pivots[0], coords, result)
         else:
             pointY = pivots[0]
-            result.groups[str(pointX) + "," + str(pointY)] = len(coords)
+            result.groups[formatTuple(pointX) + "," + formatTuple(pointY)] = len(coords)
     else:
-        first_half, second_half, pivot = get_pivot(pivots)
+        first_half, second_half, pivot = get_pivot(pivots, axis)
         less_than, bigger_than = divide_coords(coords, pivot, axis)
+
         partition(less_than, first_half, axis, pointX, result)
         partition(bigger_than, second_half, axis, pointX, result)
 
-def get_pivot(arr):
+def get_pivot(arr, axis):
     middle = len(arr) // 2
     first_half = arr[:middle]
     second_half = arr[middle:]
+    if len(arr) == 2 and axis == 1:
+        middle = 0
     return first_half, second_half, arr[middle]
 
 def divide_coords(coords, pivot, axis):
     less_than = []
     bigger_than = []
     for i in coords:
-        if i[axis] <= pivot:
+        if i[axis] <= pivot[axis]:
             less_than.append(i)
         else:
             bigger_than.append(i)
@@ -112,3 +109,8 @@ def create_areas(PCACoordsA):
             aux.append(pointB)
         areas.append([pointA, aux])
     return areas
+
+def formatTuple(tuple):
+    return str( 
+        (int(tuple[0]), int(tuple[1]))
+    )

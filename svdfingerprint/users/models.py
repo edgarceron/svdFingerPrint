@@ -6,11 +6,7 @@ from numpy import empty
 class Users(models.Model):
     """"Modelo para los usuarios del sistema"""
     name = models.CharField(max_length=50)
-    figerprint1 = ArrayField(models.IntegerField())
-    figerprint2 = ArrayField(models.IntegerField())
-    figerprint3 = ArrayField(models.IntegerField())
-    figerprint4 = ArrayField(models.IntegerField())
-    figerprint5 = ArrayField(models.IntegerField())
+    figerprints = ArrayField(ArrayField(models.IntegerField()))
 
 class Config(models.Model):
     key = models.CharField(max_length=30, null=False)

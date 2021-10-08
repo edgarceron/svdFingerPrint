@@ -1,8 +1,10 @@
 import json
 from django.http import HttpResponse
 from rest_framework.generics import ListAPIView
+from users.codelogic import check_fingerprint
 from .models import UploadImage
 from .serialziers import ImageSerializer
+
 
 class ImageViewSet(ListAPIView):
     queryset = UploadImage.objects.all()
@@ -11,9 +13,10 @@ class ImageViewSet(ListAPIView):
     def post(self, request, *args, **kwargs):
         file = request.data['file']
         image = UploadImage.objects.create(image=file)
-
+        image_relative = str(image.image)
+        check_fingerprint.check_all_fingerprints(image_relative)
         return HttpResponse(
             json.dumps({
                 'message': "Uploaded", 
-                "route": str(image.image)
+                "route": str(image_relative)
             }), status=200)

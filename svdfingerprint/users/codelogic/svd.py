@@ -36,4 +36,4 @@ def getSvd():
     fingerprints_matrix = getAllFingerPrints()
     avgFingerprint = getAvgFingerPrint(fingerprints_matrix)
     U, S, VT = calcSvd(fingerprints_matrix, avgFingerprint)
-    return U, S, VT
+    return U, avgFingerprint
