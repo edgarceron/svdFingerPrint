@@ -2,10 +2,9 @@ import os, string
 import numpy as np
 from typing import Tuple
 from PIL import Image
-from django.conf import settings
-from numpy.core.fromnumeric import var
 from skimage import io
 from skimage.util import img_as_int
+from users.models import Config, Users
 
 IMAGE_SHAPE = (200, 200)
 LETTERS = string.ascii_lowercase
@@ -52,21 +51,26 @@ def get_array_image(subfolder, image):
     filename, file_extension = os.path.splitext(image)
     if file_extension == '.jpg':
         if subfolder is not None:
-            return img_as_int(io.imread(os.path.join(subfolder, image), True))
-        return img_as_int(io.imread(image, True))
+            imgint = img_as_int(io.imread(os.path.join(subfolder, image), True))
+        else:
+            imgint = img_as_int(io.imread(image, True))
+
+        print(imgint.shape[0])
+        if imgint.shape == (200, 200):
+            return imgint
     return None
 
 def reshape(fingerprint1d: np.ndarray):
     return np.array(fingerprint1d).reshape(IMAGE_SHAPE)
 
-def create_variations(subfolder: str, image: str, flat=False) -> np.ndarray:
+def create_variations(subfolder: str, image: str, arrimage: np.array, flat=False, size=0) -> np.ndarray:
     image_path = os.path.join(subfolder, image) 
-    name = str(os.path.splitext(image)[0])
-    variations = [get_array_image(subfolder, image).flatten()]
-
-    for i in range(len(TRANSFOMS)):
+    file_name_extensionless = str(os.path.splitext(image)[0])
+    variations = [arrimage.flatten()]
+    itrange = len(TRANSFOMS) if size == 0 or size > len(TRANSFOMS) else size
+    for i in range(itrange):
         im = apply_variation(image_path, *TRANSFOMS[i])
-        folder_path = os.path.join(subfolder,name)
+        folder_path = os.path.join(subfolder, file_name_extensionless)
         os.makedirs(folder_path) if not os.path.exists(folder_path) else None
         new_image_path = os.path.join(folder_path, str(i) + '.jpg')
         im.save(new_image_path)
@@ -74,7 +78,7 @@ def create_variations(subfolder: str, image: str, flat=False) -> np.ndarray:
         variation = im_array.flatten() if flat else im_array
         variations.append(variation)
 
-    return np.transpose(np.array(variations))
+    return variations
 
 def apply_variation(image_path: str, strecth: Tuple, angle: Tuple, translate: Tuple) -> Image.Image:
     try:
@@ -96,3 +100,29 @@ def apply_variation(image_path: str, strecth: Tuple, angle: Tuple, translate: Tu
     except OSError:
         print("cannot convert")
         return None
+
+def get_variation_qty():
+    try:
+        qty = Config.objects.get(key="VARIATION_QTY")
+        return qty.value
+    except Config.DoesNotExist:
+        return 5
+
+def create_update_variation_qty(qty: int):
+    try:
+        c = Config.objects.get(key='VARIATION_QTY')
+        if int(c.value) != qty:
+            Users.objects.all().delete()
+            create_update_force_svd()
+            c.value = qty
+            c.save()
+    except Config.DoesNotExist:
+        Config.objects.create(key='VARIATION_QTY', value=qty)
+
+def create_update_force_svd():
+    try:
+        c = Config.objects.get(key='FORCE_SVD') 
+        c.value = 1
+        c.save()
+    except Config.DoesNotExist:
+        Config.objects.create(key='FORCE_SVD', value=1)

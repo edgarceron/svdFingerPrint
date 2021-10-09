@@ -7,18 +7,21 @@ class Areas:
         self.target = target
         self.areas = areas
 
-def compare(U, fingerprintA, fingerprintB, PCAModes):
-    PCAmodes = PCAModes
-    PCACoordsA = U[:, PCAmodes - np.ones_like(PCAmodes)].T @ fingerprintA
-    PCACoordsB = U[:, PCAmodes - np.ones_like(PCAmodes)].T @ fingerprintB
+def get_pca_coords(U, fingerprint, pca_modes):
+    pca_coords = U[:, pca_modes - np.ones_like(pca_modes)].T @ fingerprint
+    return pca_coords
 
-    similarity = calculate_similarity(PCACoordsA, PCACoordsB)
+def compare(U, fingerprintA, fingerprintB, pca_modes):
+    pca_coordsA = U[:, pca_modes - np.ones_like(pca_modes)].T @ fingerprintA
+    pca_coordsB = U[:, pca_modes - np.ones_like(pca_modes)].T @ fingerprintB
+
+    similarity = calculate_similarity(pca_coordsA, pca_coordsB)
     return similarity
 
-def calculate_similarity(PCACoordsA, PCACoordsB):
-    areas = create_areas(PCACoordsA)
-    pair_coords_a = create_pair_list(PCACoordsA)
-    pair_coords_b = create_pair_list(PCACoordsB)
+def calculate_similarity(pca_coordsA, pca_coordsB):
+    areas = create_areas(pca_coordsA)
+    pair_coords_a = create_pair_list(pca_coordsA)
+    pair_coords_b = create_pair_list(pca_coordsB)
     result_a = Areas('A', areas)
     result_b = Areas('B', areas)
     init_partition(pair_coords_a, result_a)
@@ -88,14 +91,17 @@ def divide_coords(coords, pivot, axis):
             bigger_than.append(i)
     return less_than, bigger_than
 
-def create_areas(PCACoordsA):
-    maxX = max(PCACoordsA[0,:])
-    maxY = max(PCACoordsA[1,:])
-    minX = min(PCACoordsA[0,:])
-    minY = min(PCACoordsA[1,:])
+def create_areas(pca_coordsA):
+    maxX = max(pca_coordsA[0,:])
+    maxY = max(pca_coordsA[1,:])
+    minX = min(pca_coordsA[0,:])
+    minY = min(pca_coordsA[1,:])
 
-    classesX = int(np.floor(np.sqrt(len(PCACoordsA[0,:]))))
-    classesY = int(np.floor(np.sqrt(len(PCACoordsA[1,:]))))
+    classesX = int(np.floor(np.sqrt(len(pca_coordsA[0,:]))))
+    classesY = int(np.floor(np.sqrt(len(pca_coordsA[1,:]))))
+
+    classesX = 5
+    classesY = 5
 
     jumpsX = np.ceil((maxX-minX)/classesX)
     jumpsY = np.ceil((maxY-minY)/classesY)

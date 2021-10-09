@@ -14,9 +14,9 @@ class ImageViewSet(ListAPIView):
         file = request.data['file']
         image = UploadImage.objects.create(image=file)
         image_relative = str(image.image)
-        check_fingerprint.check_all_fingerprints(image_relative)
+        result = check_fingerprint.check_all_fingerprints(image_relative)
         return HttpResponse(
             json.dumps({
-                'message': "Uploaded", 
+                **result,
                 "route": str(image_relative)
             }), status=200)
